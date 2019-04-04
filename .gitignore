@@ -1,2 +1,5 @@
 # ignore test data
 /alta-2017-data
+
+# Ignore python junk
+.ipynb_checkpoints
