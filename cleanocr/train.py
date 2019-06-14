@@ -130,7 +130,7 @@ class Trainer():
         return dec_input
 
     @tf.function
-    def train_step(self, inp, targ, teacher_force_prob, enc_hidden, batch_size, out_len):
+    def train_step(self, inp, targ, teacher_force_prob, enc_hidden, out_len):
         """Performs forward- and back-propagation on a single training batch."""
         loss = 0
 
@@ -169,7 +169,7 @@ class Trainer():
         return self.train_loss.result(), self.train_acc.result()
 
     @tf.function
-    def val_step(self, inp, targ, teacher_force_prob, enc_hidden, batch_size, out_len):
+    def val_step(self, inp, targ, teacher_force_prob, enc_hidden, out_len):
         """Perform forward-propagation on a single validation batch."""
         loss = 0
 
@@ -300,11 +300,11 @@ class Trainer():
             for inp, targ in self.train_data.take(-1):
 
                 # Reset the hidden state
-                batch_size, out_len = targ.shape
+                _, out_len = targ.shape
                 enc_hidden = self.encoder.initialize_hidden_state(batch_size)
 
                 # Forward- and backpropagation
-                loss, acc = self.train_step(inp, targ, _force_prob, enc_hidden, batch_size, out_len)
+                loss, acc = self.train_step(inp, targ, _force_prob, enc_hidden, out_len)
 
                 # Count the batch and print message
                 train_batches += 1
@@ -323,12 +323,12 @@ class Trainer():
             for inp, targ in self.val_data.take(-1):
 
                 # Reset hidden state
-                batch_size, out_len = targ.shape
+                _, out_len = targ.shape
                 enc_hidden = self.encoder.initialize_hidden_state(batch_size)
 
                 # Forward propagation
                 val_loss_, val_acc_ = self.val_step(inp, targ, _force_prob,
-                                                    enc_hidden, batch_size, out_len)
+                                                    enc_hidden, out_len)
 
                 val_batches += 1
 
