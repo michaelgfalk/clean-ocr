@@ -90,17 +90,16 @@ class Trainer():
 
         return tf.reduce_mean(loss_)
 
-    def sample(self, predictions, target, teacher_force_prob, t, batch_size):
+    @staticmethod
+    def sample(pred, real, teacher_force_prob):
         """Samples from previous timestep with given probability.
 
         Arguments:
         ==========
-        predictions (tensor): [m x n] tensor of output from previous timestep
-        target (tensor): [m x t x n] tensor of target sequences
+        pred (tensor): [m x n] tensor of output from previous timestep
+        real (tensor): [m x n] tensor of correct outputs
         teacher_force_prob (tensor): float, probability of using target letter as
             next input
-        t (int): current timestep
-        batch_size (int): the size of the current batch
 
         Returns:
         ==========
@@ -109,11 +108,10 @@ class Trainer():
 
         # NB: tf.random.categorical works with log probabilities
 
-        # Sample next input from predictions
-        samples = tf.random.categorical(predictions, num_samples=1, dtype=tf.int32)
+        batch_size = pred.shape[0]
 
-        # Get gold standard input from target sequence
-        teachers = tf.expand_dims(target[:, t], 1)
+        # Sample next input from predictions
+        samples = tf.random.categorical(pred, num_samples=1, dtype=tf.int32)
 
         # Create mask using teacher_force_prob
         # Copy the probabilities m times
@@ -127,7 +125,7 @@ class Trainer():
         mask = tf.cast(mask, dtype=tf.bool)
 
         # Update samples with true value where mask says to do so
-        dec_input = tf.where(mask, teachers, samples)
+        dec_input = tf.where(mask, real, samples)
 
         return dec_input
 
@@ -155,7 +153,7 @@ class Trainer():
                 self.update_accuracy(targ[:, t], predictions, self.train_acc)
 
                 # Teacher forcing/scheduled sampling
-                dec_input = self.sample(predictions, targ, teacher_force_prob, t, batch_size)
+                dec_input = self.sample(predictions, targ[:, t], teacher_force_prob)
 
         self.train_loss.update_state(loss)
 
@@ -190,7 +188,7 @@ class Trainer():
             self.update_accuracy(targ[:, t], predictions, self.val_acc)
 
             # Use teacher forcing or sampling as appropriate...
-            dec_input = self.sample(predictions, targ, teacher_force_prob, t, batch_size)
+            dec_input = self.sample(predictions, targ[: t], teacher_force_prob)
 
         # Calculate val_loss
         self.val_loss.update_state(loss)
@@ -272,6 +270,7 @@ class Trainer():
         """Load saved variables from checkpoint"""
         self.checkpoint.restore(self.checkpoint_dir)
 
+    # pylint: disable=too-many-locals;
     def train(self):
         """Run training loop"""
 
