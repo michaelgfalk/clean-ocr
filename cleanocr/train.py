@@ -300,7 +300,7 @@ class Trainer():
             for inp, targ in self.train_data.take(-1):
 
                 # Reset the hidden state
-                _, out_len = targ.shape
+                batch_size, out_len = targ.shape
                 enc_hidden = self.encoder.initialize_hidden_state(batch_size)
 
                 # Forward- and backpropagation
@@ -323,7 +323,7 @@ class Trainer():
             for inp, targ in self.val_data.take(-1):
 
                 # Reset hidden state
-                _, out_len = targ.shape
+                batch_size, out_len = targ.shape
                 enc_hidden = self.encoder.initialize_hidden_state(batch_size)
 
                 # Forward propagation
