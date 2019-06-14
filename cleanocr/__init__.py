@@ -1,0 +1,1 @@
+"""Creates, trains and uses recurrent neural networks for automatic OCR correction."""
