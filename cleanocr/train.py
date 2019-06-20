@@ -10,43 +10,18 @@ import tensorflow as tf
 
 from cleanocr.preprocess import load_dataset
 from cleanocr.model import Encoder, Decoder
-from cleanocr.utils import format_time
+from cleanocr.utils import format_time, HParams
 
 class Trainer():
     """Class for orgainising training loop."""
     def __init__(
             self,
-            data_dir,
-            optimizer='Adam',
-            max_batch_size=16,
-            tolerance=1.2,
-            max_len=180,
-            epochs=10,
-            K=32,
-            checkpoint_dir=None,
-            norm_lim=3,
-            embedding_dim=25,
-            units=50,
-            teacher_force_prob=0.99,
-            teacher_force_decay=0.005
+            hparams
         ):
 
         # Hyperparameters
-        self.data_dir = data_dir
-        self.optimizer = tf.keras.optimizers.get(optimizer)
-        self.max_batch_size = max_batch_size
-        self.tolerance = tolerance
-        self.max_len = max_len
-        self.epochs = epochs
-        self.K = K
-        self.checkpoint_dir = checkpoint_dir
-        self.checkpoint_dir = os.path.join(self.data_dir, 'checkpoints_sentences')
-        self.checkpoint_prefix = os.path.join(self.checkpoint_dir, 'ckpt')
-        self.norm_lim = norm_lim
-        self.embedding_dim = embedding_dim
-        self.units = units
-        self.teacher_force_prob = teacher_force_prob
-        self.teacher_force_decay = teacher_force_decay
+        assert type(hparams) == 'cleanocr.utils.HParams'
+        self.hparams = hparams
 
         # Data-derived hyperparameters
         self.tkzr = None
