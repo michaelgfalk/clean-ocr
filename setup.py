@@ -13,7 +13,7 @@ setup(
     keywords='RNN GRU attention OCR text-mining',
     entry_points={
         'console_scripts': [
-            'clean-ocr = cleanocr.commands:cli'
+            'ocr-cleaner = cleanocr.commands:cli'
         ]
     }
 

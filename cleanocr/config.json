@@ -1,0 +1,15 @@
+{
+    "embedding_dim": 25,
+    "units": 50,
+    "K": 32,
+    "optimizer": "adam",
+    "max_batch_size": 16,
+    "tolerance": 1.2,
+    "max_len": 180,
+    "epochs": 10,
+    "norm_lim": 3,
+    "teacher_force_prob": 0.99,
+    "teacher_force_decay": 0.005,
+    "checkpoint_dir": "",
+    "data_dir": ""
+}

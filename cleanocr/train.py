@@ -20,7 +20,7 @@ class Trainer():
         ):
 
         # Hyperparameters
-        assert type(hparams) == 'cleanocr.utils.HParams'
+        assert isinstance(hparams, HParams)
         self.hparams = hparams
 
         # Data-derived hyperparameters
@@ -29,7 +29,6 @@ class Trainer():
         self.train_data = None
         self.val_data = None
         self.bucket_info = None
-        self.num_chars = None
         self.encoder = None
         self.decoder = None
         self.checkpoint = None
@@ -137,9 +136,9 @@ class Trainer():
         gradients = tape.gradient(loss, variables)
 
         # Clip gradients
-        clipped_gradients = [tf.clip_by_norm(grad, self.norm_lim) for grad in gradients]
+        clipped_gradients = [tf.clip_by_norm(grad, self.hparams.norm_lim) for grad in gradients]
 
-        self.optimizer.apply_gradients(zip(clipped_gradients, variables))
+        self.hparams.optimizer.apply_gradients(zip(clipped_gradients, variables))
 
         return self.train_loss.result(), self.train_acc.result()
 
@@ -189,18 +188,18 @@ class Trainer():
         ==========
         filename(str): filename of the pickle"""
 
-        with open(os.path.join(self.data_dir, filename), 'rb') as file:
+        with open(os.path.join(self.hparams.data_dir, filename), 'rb') as file:
             self.tkzr, self.seqs = p.load(file)
 
         self.train_data, self.val_data, self.tkzr, self.seqs, self.bucket_info = load_dataset(
             seqs=self.seqs,
             tkzr=self.tkzr,
-            batch_size=self.max_batch_size,
-            max_len=self.max_len,
-            tolerance=self.tolerance)
+            batch_size=self.hparams.max_batch_size,
+            max_len=self.hparams.max_len,
+            tolerance=self.hparams.tolerance)
 
         # Get vocab size
-        self.num_chars = len(self.tkzr.word_index) + 1 # Add one for padding
+        self.hparams.num_chars = len(self.tkzr.word_index) + 1 # Add one for padding
 
     def load_raw_data(self, x_path, y_path):
         """Loads data from provided csvs.
@@ -217,44 +216,53 @@ class Trainer():
         self.train_data, self.val_data, self.tkzr, self.seqs, self.bucket_info = load_dataset(
             x_path=x_path,
             y_path=y_path,
-            batch_size=self.max_batch_size,
-            tolerance=self.tolerance,
-            max_len=self.max_len)
+            batch_size=self.hparams.max_batch_size,
+            tolerance=self.hparams.tolerance,
+            max_len=self.hparams.max_len)
 
-        self.num_chars = len(self.tkzr.word_index)
+        self.hparams.num_chars = len(self.tkzr.word_index)
 
-        with open(os.path.join(self.data_dir, 'saved_ocr_training_data.pickle'), 'wb') as file:
+        with open(
+                os.path.join(
+                    self.hparams.data_dir, 'saved_ocr_training_data.pickle'), 'wb'
+                ) as file:
             p.dump((self.tkzr, self.seqs), file)
 
     def define_model(self):
         """Defines model and creates checkpoints."""
         # Check that data has been imported and processed
-        if self.num_chars is None:
+        if self.hparams.num_chars is None:
             raise AttributeError('Model definition failed. Vocabulary size not known.')
 
         # If so, define model
-        self.encoder = Encoder(self.num_chars, self.embedding_dim, self.units, self.K)
-        self.decoder = Decoder(self.num_chars, self.embedding_dim, self.units, self.K)
+        self.encoder = Encoder(**self.hparams.encoder())
+        self.decoder = Decoder(**self.hparams.decoder())
 
         # Define checkpoints for saving
-        self.checkpoint = tf.train.Checkpoint(optimizer=self.optimizer,
+        self.checkpoint = tf.train.Checkpoint(optimizer=self.hparams.optimizer,
                                               encoder=self.encoder,
                                               decoder=self.decoder)
 
     def load_saved_variables(self):
         """Load saved variables from checkpoint"""
-        self.checkpoint.restore(self.checkpoint_dir)
+        self.checkpoint.restore(self.hparams.checkpoint_dir)
 
     # pylint: disable=too-many-locals;
-    def train(self):
+    def train(self, epochs):
         """Run training loop"""
 
         # Teacher forcing hparams
-        _force_decay = self.teacher_force_decay
-        _force_prob = self.teacher_force_prob
+        _force_decay = self.hparams.teacher_force_decay
+        _force_prob = self.hparams.teacher_force_prob
+
+        # Either use passed number of epochs, or look up hparams
+        if epochs:
+            epochs_ = epochs
+        else:
+            epochs_ = self.hparams.epochs
 
         # Loop over epochs
-        for epoch in range(self.epochs):
+        for epoch in range(epochs_):
             print(f'Starting Epoch {epoch + 1}\n')
 
             self.train_loss.reset_states()
@@ -292,7 +300,7 @@ class Trainer():
 
             # Save the model every 2 epochs
             if (epoch + 1) % 2 == 0:
-                self.checkpoint.save(file_prefix=self.checkpoint_prefix)
+                self.checkpoint.save(file_prefix=self.hparams.checkpoint_prefix)
 
             # Calculate validation loss and accuracy
             for inp, targ in self.val_data.take(-1):
