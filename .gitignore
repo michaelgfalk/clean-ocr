@@ -5,6 +5,7 @@
 # Ignore python junk
 .ipynb_checkpoints
 */__pycache__
+/*.egg-info
 
 # Ignore venv
 /bin
@@ -14,6 +15,3 @@ pyvenv.cfg
 
 # Ignore vscode stuff
 /.vscode
-
-# distro junk
-/*.egg-info

@@ -3,6 +3,7 @@
 # pylint: disable=invalid-name;
 
 import json
+from importlib.resources import path
 from collections import defaultdict
 import tensorflow as tf
 
@@ -16,6 +17,8 @@ class HParams():
         self.embedding_dim = kwargs['embedding_dim']
         self.K = kwargs['K'] # pylint: disable=invalid-name;
         self.data_dir = kwargs['data_dir']
+        self.x_path = kwargs['x_path']
+        self.y_path = kwargs['y_path']
         self.optimizer = tf.keras.optimizers.get(kwargs['optimizer'])
         self.max_batch_size = kwargs['max_batch_size']
         self.tolerance = kwargs['tolerance']

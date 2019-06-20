@@ -5,6 +5,7 @@
 import os
 import time
 import pickle as p
+from importlib.resources import path
 
 import tensorflow as tf
 
@@ -16,11 +17,17 @@ class Trainer():
     """Class for orgainising training loop."""
     def __init__(
             self,
-            hparams
+            hparams,
+            load_saved_model=True,
+            load_saved_data=True
         ):
 
-        # Hyperparameters
+        # Type checks
         assert isinstance(hparams, HParams)
+        assert isinstance(load_saved_model, bool)
+        assert isinstance(load_saved_data, bool)
+
+        # Hyperparameters
         self.hparams = hparams
 
         # Data-derived hyperparameters
@@ -41,6 +48,19 @@ class Trainer():
         self.train_acc = tf.keras.metrics.SparseCategoricalAccuracy(name='train_acc')
         self.val_loss = tf.keras.metrics.Mean(name='val_loss')
         self.val_acc = tf.keras.metrics.SparseCategoricalAccuracy(name='val_acc')
+
+        # Build model
+        if load_saved_data:
+            self._load_saved_data()
+        else:
+            x_path = os.path.join(self.hparams.data_dir, self.hparams.x_path)
+            y_path = os.path.join(self.hparams.data_dir, self.hparams.y_path)
+            self._load_raw_data(x_path, y_path)
+
+        self._define_model()
+
+        if load_saved_model:
+            self._load_saved_variables()
 
     # Functions for training loop
     def loss_function(self, real, pred):
@@ -180,75 +200,7 @@ class Trainer():
         # Compute accuracy
         acc_object.update_state(real, pred, sample_weight=mask)
 
-    # Data pipeline
-    def load_saved_data(self, filename):
-        """Load data from saved pickle
-
-        Arguments:
-        ==========
-        filename(str): filename of the pickle"""
-
-        with open(os.path.join(self.hparams.data_dir, filename), 'rb') as file:
-            self.tkzr, self.seqs = p.load(file)
-
-        self.train_data, self.val_data, self.tkzr, self.seqs, self.bucket_info = load_dataset(
-            seqs=self.seqs,
-            tkzr=self.tkzr,
-            batch_size=self.hparams.max_batch_size,
-            max_len=self.hparams.max_len,
-            tolerance=self.hparams.tolerance)
-
-        # Get vocab size
-        self.hparams.num_chars = len(self.tkzr.word_index) + 1 # Add one for padding
-
-    def load_raw_data(self, x_path, y_path):
-        """Loads data from provided csvs.
-
-        The method presumes that you data is stored in two seperate csvs,
-        one for the uncorrected texts, and one for the corrected texts.
-        Each text occupies a single line of the csv.
-
-        Arguments:
-        ==========
-        x_path (str): the path to the uncorrected csv
-        y_path (str): the path to the corrected csv
-        """
-        self.train_data, self.val_data, self.tkzr, self.seqs, self.bucket_info = load_dataset(
-            x_path=x_path,
-            y_path=y_path,
-            batch_size=self.hparams.max_batch_size,
-            tolerance=self.hparams.tolerance,
-            max_len=self.hparams.max_len)
-
-        self.hparams.num_chars = len(self.tkzr.word_index)
-
-        with open(
-                os.path.join(
-                    self.hparams.data_dir, 'saved_ocr_training_data.pickle'), 'wb'
-                ) as file:
-            p.dump((self.tkzr, self.seqs), file)
-
-    def define_model(self):
-        """Defines model and creates checkpoints."""
-        # Check that data has been imported and processed
-        if self.hparams.num_chars is None:
-            raise AttributeError('Model definition failed. Vocabulary size not known.')
-
-        # If so, define model
-        self.encoder = Encoder(**self.hparams.encoder())
-        self.decoder = Decoder(**self.hparams.decoder())
-
-        # Define checkpoints for saving
-        self.checkpoint = tf.train.Checkpoint(optimizer=self.hparams.optimizer,
-                                              encoder=self.encoder,
-                                              decoder=self.decoder)
-
-    def load_saved_variables(self):
-        """Load saved variables from checkpoint"""
-        self.checkpoint.restore(self.hparams.checkpoint_dir)
-
-    # pylint: disable=too-many-locals;
-    def train(self, epochs):
+    def train(self, epochs): # pylint: disable=too-many-locals;
         """Run training loop"""
 
         # Teacher forcing hparams
@@ -320,3 +272,75 @@ class Trainer():
             print(f'val_loss = {val_loss_:.2f} val_acc = {val_acc_*100:.2f}%')
             print(f'Time taken for 1 epoch: {format_time(time.time() - start)}')
             print('===========================\n')
+
+    # Data pipeline
+    def _load_saved_data(self, filename='saved-data.pickle'):
+        """Load data from saved pickle
+
+        Arguments:
+        ==========
+        filename(str): filename of the pickle"""
+
+        with open(os.path.join(self.hparams.data_dir, filename), 'rb') as file:
+            self.tkzr, self.seqs = p.load(file)
+
+        self.train_data, self.val_data, self.tkzr, self.seqs, self.bucket_info = load_dataset(
+            seqs=self.seqs,
+            tkzr=self.tkzr,
+            batch_size=self.hparams.max_batch_size,
+            max_len=self.hparams.max_len,
+            tolerance=self.hparams.tolerance)
+
+        # Get vocab size
+        self.hparams.num_chars = len(self.tkzr.word_index) + 1 # Add one for padding
+
+    def _load_raw_data(self, x_path, y_path):
+        """Loads data from provided csvs.
+
+        The method presumes that you data is stored in two seperate csvs,
+        one for the uncorrected texts, and one for the corrected texts.
+        Each text occupies a single line of the csv.
+
+        Arguments:
+        ==========
+        x_path (str): the path to the uncorrected csv
+        y_path (str): the path to the corrected csv
+        """
+        self.train_data, self.val_data, self.tkzr, self.seqs, self.bucket_info = load_dataset(
+            x_path=x_path,
+            y_path=y_path,
+            batch_size=self.hparams.max_batch_size,
+            tolerance=self.hparams.tolerance,
+            max_len=self.hparams.max_len)
+
+        self.hparams.num_chars = len(self.tkzr.word_index)
+
+        with open(
+                os.path.join(
+                    self.hparams.data_dir, 'saved_ocr_training_data.pickle'), 'wb'
+                ) as file:
+            p.dump((self.tkzr, self.seqs), file)
+
+    def _define_model(self):
+        """Defines model and creates checkpoints."""
+        # Check that data has been imported and processed
+        if self.hparams.num_chars is None:
+            raise AttributeError('Model definition failed. Vocabulary size not known.')
+
+        # If so, define model
+        self.encoder = Encoder(**self.hparams.encoder())
+        self.decoder = Decoder(**self.hparams.decoder())
+
+        # Define checkpoints for saving
+        self.checkpoint = tf.train.Checkpoint(optimizer=self.hparams.optimizer,
+                                              encoder=self.encoder,
+                                              decoder=self.decoder)
+
+    def _load_saved_variables(self):
+        """Load saved variables from checkpoint"""
+        if self.hparams.checkpoint_dir is None:
+            with path('cleanocr', 'saved_variables') as chk_dir:
+                # self.checkpoint.restore(chk_dir)
+                print(chk_dir)
+        else:
+            self.checkpoint.restore(self.hparams.checkpoint_dir)

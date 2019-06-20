@@ -10,6 +10,8 @@
     "norm_lim": 3,
     "teacher_force_prob": 0.99,
     "teacher_force_decay": 0.005,
-    "checkpoint_dir": "",
-    "data_dir": ""
+    "checkpoint_dit": null,
+    "data_dir": "internal/data",
+    "x_path": "",
+    "y_path": ""
 }

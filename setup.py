@@ -8,7 +8,7 @@ setup(
     packages=find_packages(),
     author='Michael Falk',
     author_email='m.falk@westernsydney.edu.au',
-    description='Uses a seq2seq model to clean messy OCR.',
+    description='Use a deep encoder-decoder to clean messy OCR.',
     license='MIT',
     keywords='RNN GRU attention OCR text-mining',
     entry_points={

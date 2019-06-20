@@ -5,14 +5,14 @@ from importlib.resources import path
 import click
 from cleanocr.utils import HParams
 from cleanocr.train import Trainer
-from cleanocr.model import Encoder, Decoder
 
 # pylint: disable=unnecessary-pass;
+# pylint: disable=line-too-long;
 
 @click.group()
 def cli():
     """A system for training and using deep encoder-decodrs for ocr correction.
-    
+
     The included model has been trained on 6000 newspaper articles downloaded
     from the Trove database, used for the ALTA-2017 challenge. If you have your
     own training data, you can use it either to improve the included model,
@@ -36,13 +36,17 @@ def cli():
 @click.option('-nc', '--num_chars', help='number of characters in vocabulary; if not supplied, it is inferred from the data', type=int, default=None)
 @click.option('-c', '--checkpoint_dir', help='directory where model data should be saved, defaults to included model', type=str, default='included_model')
 @click.option('-d', '--data_dir', help='directory where data is stored, defaults to current working directory', type=str, default='/')
-@click.option('--new-model/--old-model', default=False)
-@click.option('--from-raw-data/--from-preprocessed-data', default=False)
+@click.option('-x', '--x_path', help='file name of input sequences, if loading raw training data')
+@click.option('-y', '--y_path', help='file name of output sequences, if loading raw training data')
+@click.option('--saved-model/--new-model', help='use saved model, or create new one? defaults to saved-model', default=True)
+@click.option('--saved-data/--raw-data', help='load preprocessed training data, or load from raw? defaults to saved-data', default=True)
 def train(**kwargs):
     """Train an ocr model on data you supply.
-    
+
     You can supply the hyperparemters in a json file, or use
     the config.json included in this package."""
+
+    print(kwargs)
 
     # Get options, store in HParams
     if kwargs['json'] == 'use included':
@@ -54,16 +58,14 @@ def train(**kwargs):
         hparams = HParams(**kwargs)
 
     # Instantiate Trainer object
-    trainer = Trainer(hparams)
+    trainer = Trainer(hparams, kwargs['saved_model'], kwargs['saved_data'])
 
-    # if not kwargs['new_model']:
-    #     trainer.load_saved_variables()
+    print(trainer)
 
 @cli.command()
 def clean():
     """Clean some OCR text using a trained model."""
     click.echo('Not implemented yet!')
-
 
 if __name__ == '__main__':
     cli()
