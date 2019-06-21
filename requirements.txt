@@ -1,11 +1,13 @@
 absl-py==0.7.1
 astor==0.8.0
 astroid==2.2.5
+-e git+https://github.com/michaelgfalk/clean-ocr@87b98d02663bbefba75c80834c2eb64477fe0f1b#egg=clean_ocr
 Click==7.0
 gast==0.2.2
 google-pasta==0.1.7
 grpcio==1.21.1
 h5py==2.9.0
+importlib-resources==1.0.2
 isort==4.3.20
 joblib==0.13.2
 Keras-Applications==1.0.8

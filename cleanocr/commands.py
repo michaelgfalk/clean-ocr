@@ -60,7 +60,7 @@ def train(**kwargs):
     # Instantiate Trainer object
     trainer = Trainer(hparams, kwargs['saved_model'], kwargs['saved_data'])
 
-    print(trainer)
+    print(hparams.optimizer)
 
 @cli.command()
 def clean():

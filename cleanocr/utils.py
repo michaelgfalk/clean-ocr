@@ -3,7 +3,6 @@
 # pylint: disable=invalid-name;
 
 import json
-from importlib.resources import path
 from collections import defaultdict
 import tensorflow as tf
 
