@@ -108,7 +108,7 @@ class Trainer():
         if tf.rank(real) < 2:
             real = tf.expand_dims(real, 1)
 
-        batch_size = tf.reshape(pred.shape[0], [1], dtype=tf.int32)
+        batch_size = tf.reshape(pred.shape[0], [1])
 
         # Sample next input from predictions
         samples = tf.random.categorical(pred, num_samples=1, dtype=tf.int32)
