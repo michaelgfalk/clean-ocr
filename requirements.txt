@@ -1,7 +1,6 @@
 absl-py==0.7.1
 astor==0.8.0
 astroid==2.2.5
--e git+https://github.com/michaelgfalk/clean-ocr@87b98d02663bbefba75c80834c2eb64477fe0f1b#egg=clean_ocr
 Click==7.0
 gast==0.2.2
 google-pasta==0.1.7

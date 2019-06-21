@@ -5,8 +5,8 @@
 import os
 import time
 import pickle as p
-from importlib_resources import path
 
+from importlib_resources import path
 import tensorflow as tf
 
 from cleanocr.preprocess import load_dataset
@@ -61,6 +61,8 @@ class Trainer():
 
         if load_saved_model:
             self._load_saved_variables()
+        else:
+            self._create_checkpoint_dir()
 
     # Functions for training loop
     def loss_function(self, real, pred):
@@ -200,7 +202,7 @@ class Trainer():
         # Compute accuracy
         acc_object.update_state(real, pred, sample_weight=mask)
 
-    def train(self, epochs): # pylint: disable=too-many-locals;
+    def train(self, epochs=None): # pylint: disable=too-many-locals;
         """Run training loop"""
 
         # Teacher forcing hparams
@@ -208,7 +210,7 @@ class Trainer():
         _force_prob = self.hparams.teacher_force_prob
 
         # Either use passed number of epochs, or look up hparams
-        if epochs:
+        if epochs is not None:
             epochs_ = epochs
         else:
             epochs_ = self.hparams.epochs
@@ -252,7 +254,7 @@ class Trainer():
 
             # Save the model every 2 epochs
             if (epoch + 1) % 2 == 0:
-                self.checkpoint.save(file_prefix=self.hparams.checkpoint_prefix)
+                self.checkpoint.save(file_prefix='ocr-clean-ckpt')
 
             # Calculate validation loss and accuracy
             for inp, targ in self.val_data.take(-1):
@@ -344,3 +346,17 @@ class Trainer():
                 print(chk_dir)
         else:
             self.checkpoint.restore(self.hparams.checkpoint_dir)
+
+    def _create_checkpoint_dir(self):
+        """Checks that checkpoint directory exists, creates it if it doesn't."""
+        if self.hparams.checkpoint_dir is None:
+            chk_dir = os.path.join(os.getcwd(), 'model_checkpoints')
+            print(f'Creating directory {chk_dir}...')
+            os.mkdir(chk_dir)
+            self.hparams.checkpoint_dir = chk_dir
+        else:
+            if not os.path.exists(self.hparams.checkpoint_dir):
+                print(f'Creating directory {self.hparams.checkpoint_dir}...')
+                os.mkdir(self.hparams.checkpoint_dir)
+            else:
+                print(f'Model parameters will be saved to {self.hparams.checkpoint_dir}')

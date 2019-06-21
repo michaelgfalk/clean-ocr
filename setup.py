@@ -15,6 +15,12 @@ setup(
         'console_scripts': [
             'ocr-cleaner = cleanocr.commands:cli'
         ]
-    }
+    },
+    install_requires=[
+        'Click',
+        'tensorflow>=2.0',
+        'importlib-resources',
+        'scipy'
+    ]
 
 )
