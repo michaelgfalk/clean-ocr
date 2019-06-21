@@ -342,8 +342,7 @@ class Trainer():
         """Load saved variables from checkpoint"""
         if self.hparams.checkpoint_dir is None:
             with path('cleanocr', 'saved_variables') as chk_dir:
-                # self.checkpoint.restore(chk_dir)
-                print(chk_dir)
+                self.checkpoint.restore(chk_dir)
         else:
             self.checkpoint.restore(self.hparams.checkpoint_dir)
 
