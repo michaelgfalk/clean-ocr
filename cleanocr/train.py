@@ -134,12 +134,15 @@ class Trainer():
 
             # Encode input sequence: retrieve last hidden state and attention matrix
             enc_hidden, C = self.encoder(inp, enc_hidden)
+            print(f'enc_hidden.shape: {enc_hidden.shape}')
 
             # Set initial state of decoder to same as encoder
             dec_hidden = enc_hidden
+            print(f'dec_hidden.shape: {dec_hidden.shape}')
 
             # Set initial input of decoder to initial input of input sequence
             dec_input = tf.expand_dims(inp[:, 0], 1)
+            print(f'dec_input.shape: {dec_input.shape}')
 
             for t in range(1, out_len):
                 # passing enc_output to the decoder
@@ -349,13 +352,9 @@ class Trainer():
     def _create_checkpoint_dir(self):
         """Checks that checkpoint directory exists, creates it if it doesn't."""
         if self.hparams.checkpoint_dir is None:
-            chk_dir = os.path.join(os.getcwd(), 'model_checkpoints')
-            print(f'Creating directory {chk_dir}...')
-            os.mkdir(chk_dir)
-            self.hparams.checkpoint_dir = chk_dir
+            self.hparams.checkpoint_dir = os.path.join(os.getcwd(), 'model_checkpoints')
+        if not os.path.exists(self.hparams.checkpoint_dir):
+            print(f'Creating directory {self.hparams.checkpoint_dir}...')
+            os.mkdir(self.hparams.checkpoint_dir)
         else:
-            if not os.path.exists(self.hparams.checkpoint_dir):
-                print(f'Creating directory {self.hparams.checkpoint_dir}...')
-                os.mkdir(self.hparams.checkpoint_dir)
-            else:
-                print(f'Model parameters will be saved to {self.hparams.checkpoint_dir}')
+            print(f'Model parameters will be saved to {self.hparams.checkpoint_dir}')
