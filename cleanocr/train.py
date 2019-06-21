@@ -125,6 +125,10 @@ class Trainer():
         mask = tf.cast(mask, dtype=tf.bool)
 
         # Update samples with true value where mask says to do so
+        print(f'shapes passed to tf.where:')
+        print(f'     mask.shape: {mask.shape}')
+        print(f'     real.shape: {real.shape}')
+        print(f'     samples.shape: {samples.shape}')
         dec_input = tf.where(mask, real, samples)
 
         return dec_input
