@@ -108,15 +108,15 @@ class Trainer():
         if tf.rank(real) < 2:
             real = tf.expand_dims(real, 1)
 
-        batch_size = pred.shape[0]
+        batch_size = tf.cast(pred.shape[0], dtype=tf.int32)
 
         # Sample next input from predictions
         samples = tf.random.categorical(pred, num_samples=1, dtype=tf.int32)
 
         # Create mask using teacher_force_prob
         # Copy the probabilities m times
-        mask = tf.tile(tf.math.log([1-teacher_force_prob, tf.math.log(teacher_force_prob)]),
-                       [batch_size])
+        mask = tf.concat(1-teacher_force_prob, teacher_force_prob)
+        mask = tf.tile(mask, batch_size)
         # Reshape into an m x 2 tensor
         mask = tf.reshape(mask, [batch_size, 2])
         # Sample to create mask
