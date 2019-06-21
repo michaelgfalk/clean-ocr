@@ -115,7 +115,7 @@ class Trainer():
 
         # Create mask using teacher_force_prob
         # Copy the probabilities m times
-        mask = tf.tile([tf.math.log(1-teacher_force_prob), tf.math.log(teacher_force_prob)],
+        mask = tf.tile(tf.math.log([1-teacher_force_prob), tf.math.log(teacher_force_prob)],
                        [batch_size])
         # Reshape into an m x 2 tensor
         mask = tf.reshape(mask, [batch_size, 2])
