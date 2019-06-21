@@ -125,10 +125,6 @@ class Trainer():
         mask = tf.cast(mask, dtype=tf.bool)
 
         # Update samples with true value where mask says to do so
-        print(f'shapes passed to tf.where:')
-        print(f'     mask.shape: {mask.shape}')
-        print(f'     real.shape: {real.shape}')
-        print(f'     samples.shape: {samples.shape}')
         dec_input = tf.where(mask, real, samples)
 
         return dec_input
@@ -151,7 +147,6 @@ class Trainer():
 
             for t in range(1, out_len):
                 # passing enc_output to the decoder
-                print(f'Shape of input passed to decoder: {dec_input.shape}')
                 predictions, dec_hidden = self.decoder(dec_input, dec_hidden, C)
 
                 loss += self.loss_function(targ[:, t], predictions)
