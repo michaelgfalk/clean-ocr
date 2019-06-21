@@ -101,6 +101,7 @@ class Trainer():
         ==========
         dec_input (tensor): [m x 1] tensor of mixed target tokens and sampled ones
         """
+        import pdb; pdb.set_trace()
 
         # NB: tf.random.categorical works with log probabilities
 
@@ -134,28 +135,22 @@ class Trainer():
 
             # Encode input sequence: retrieve last hidden state and attention matrix
             enc_hidden, C = self.encoder(inp, enc_hidden)
-            print(f'enc_hidden.shape: {enc_hidden.shape}')
-            print(f'C.shape: {C.shape}')
 
             # Set initial state of decoder to same as encoder
             dec_hidden = enc_hidden
-            print(f'dec_hidden.shape: {dec_hidden.shape}')
 
             # Set initial input of decoder to initial input of input sequence
             dec_input = tf.expand_dims(inp[:, 0], 1)
-            print(f'dec_input.shape: {dec_input.shape}')
 
             for t in range(1, out_len):
                 # passing enc_output to the decoder
                 predictions, dec_hidden = self.decoder(dec_input, dec_hidden, C)
-                print(f'Shape of predictions after decoding: {predictions.shape}')
 
                 loss += self.loss_function(targ[:, t], predictions)
                 self.update_accuracy(targ[:, t], predictions, self.train_acc)
 
                 # Teacher forcing/scheduled sampling
                 dec_input = self.sample(predictions, targ[:, t], teacher_force_prob)
-                print(f'Shape of dec_input after sampling: {dec_input.shape}')
 
         self.train_loss.update_state(loss)
 
