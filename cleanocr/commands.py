@@ -1,6 +1,6 @@
 """Command line interface."""
 
-from importlib.resources import path
+from importlib_resources import path
 
 import click
 from cleanocr.utils import HParams

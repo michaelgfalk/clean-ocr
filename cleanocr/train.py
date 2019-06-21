@@ -5,7 +5,7 @@
 import os
 import time
 import pickle as p
-from importlib.resources import path
+from importlib_resources import path
 
 import tensorflow as tf
 
