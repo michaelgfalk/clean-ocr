@@ -158,18 +158,22 @@ class Decoder(Model):
         # Compute embeddings for x
         # x shape after embedding == (m, 1, embedding_dim)
         x = self.embedding(x)
+        print(f'x.shape after embedding (should be m, 1, embedding_dim): {x.shape}')
 
         # Score attention vectors
         # beta shape == (m, k)
         beta = self.attention_scorer(state)
+        print(f'beta.shape: {beta.shape}')
 
         # Take linear combination of attention vectors
         # beta, C -> c ==> (m, K), (K, dec_units) -> (m, dec_units)
         c = tf.matmul(beta, C)
+        print(f'c after matmul (should be (m, units): {c.shape}')
 
         # Expand dims of c
         # c shape after expansion == (m, 1, dec_units)
         c = tf.expand_dims(c, 1)
+        print(f'c after expand (should be (m, 1, units): {c.shape}')
         # x shape after concatenation == (m, 1, dec_units + embedding_dim)
         x = tf.concat([c, x], axis=-1)
 
