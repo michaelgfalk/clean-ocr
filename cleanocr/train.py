@@ -151,6 +151,7 @@ class Trainer():
 
             for t in range(1, out_len):
                 # passing enc_output to the decoder
+                print(f'Shape of input passed to decoder: {dec_input.shape}')
                 predictions, dec_hidden = self.decoder(dec_input, dec_hidden, C)
 
                 loss += self.loss_function(targ[:, t], predictions)
