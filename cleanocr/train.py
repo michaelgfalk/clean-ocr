@@ -104,15 +104,14 @@ class Trainer():
 
         # NB: tf.random.categorical works with log probabilities
 
-        print(f'pred.shape: {pred.shape}')
-        print(f'real.shape: {real.shape}')
+        # Check shape of real
+        if tf.rank(real) < 2:
+            tf.expand_dims(real, 1)
 
         batch_size = pred.shape[0]
-        print(f'Batch size: {batch_size}')
 
         # Sample next input from predictions
         samples = tf.random.categorical(pred, num_samples=1, dtype=tf.int32)
-        print(f'samples.shape (should be (m, 1)): {samples.shape}')
 
         # Create mask using teacher_force_prob
         # Copy the probabilities m times
@@ -124,7 +123,6 @@ class Trainer():
         mask = tf.random.categorical(mask, num_samples=1)
         # Recast into a boolean tensor
         mask = tf.cast(mask, dtype=tf.bool)
-        print(f'mask.shape (should be (m, 2): {mask.shape}')
 
         # Update samples with true value where mask says to do so
         dec_input = tf.where(mask, real, samples)
