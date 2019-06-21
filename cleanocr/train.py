@@ -106,7 +106,7 @@ class Trainer():
 
         # Check shape of real
         if tf.rank(real) < 2:
-            tf.expand_dims(real, 1)
+            real = tf.expand_dims(real, 1)
 
         batch_size = pred.shape[0]
 
