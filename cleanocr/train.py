@@ -135,6 +135,7 @@ class Trainer():
             # Encode input sequence: retrieve last hidden state and attention matrix
             enc_hidden, C = self.encoder(inp, enc_hidden)
             print(f'enc_hidden.shape: {enc_hidden.shape}')
+            print(f'C.shape: {C.shape}')
 
             # Set initial state of decoder to same as encoder
             dec_hidden = enc_hidden
