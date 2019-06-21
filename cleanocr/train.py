@@ -118,7 +118,7 @@ class Trainer():
         mask = tf.stack([1-teacher_force_prob, teacher_force_prob], axis=0, name='stack_probs')
         mask = tf.tile(mask, batch_size, name='tile_to_create_mask')
         # Reshape into an m x 2 tensor
-        mask = tf.reshape(mask, [batch_size, 2], name='reshape_mask')
+        mask = tf.reshape(mask, [batch_size, [2]], name='reshape_mask')
         # Sample to create mask
         mask = tf.random.categorical(mask, num_samples=1, name='sample_from_mask')
         # Recast into a boolean tensor
