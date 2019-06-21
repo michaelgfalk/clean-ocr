@@ -148,6 +148,7 @@ class Trainer():
             for t in range(1, out_len):
                 # passing enc_output to the decoder
                 predictions, dec_hidden = self.decoder(dec_input, dec_hidden, C)
+                print(f'Shape of predictions after decoding: {predictions.shape}')
 
                 loss += self.loss_function(targ[:, t], predictions)
                 self.update_accuracy(targ[:, t], predictions, self.train_acc)
