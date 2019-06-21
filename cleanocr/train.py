@@ -154,6 +154,7 @@ class Trainer():
 
                 # Teacher forcing/scheduled sampling
                 dec_input = self.sample(predictions, targ[:, t], teacher_force_prob)
+                print(f'Shape of dec_input after sampling: {dec_input.shape}')
 
         self.train_loss.update_state(loss)
 
