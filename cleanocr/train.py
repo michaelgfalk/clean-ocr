@@ -87,7 +87,7 @@ class Trainer():
         return tf.reduce_mean(loss_)
 
     @staticmethod
-    def sample(pred, real, teacher_force_prob):
+    def sample(pred, real, teacher_force_prob, batch_size):
         """Samples from previous timestep with given probability.
 
         Arguments:
@@ -96,6 +96,7 @@ class Trainer():
         real (tensor): [m x n] tensor of correct outputs
         teacher_force_prob (tensor): float, probability of using target letter as
             next input
+        batch_size (int): m, the number of examples in the batch
 
         Returns:
         ==========
@@ -108,10 +109,6 @@ class Trainer():
         if tf.rank(real) < 2:
             real = tf.expand_dims(real, 1)
 
-        # Batch size
-        print(f'Shape of pred: {pred.shape[0]}')
-        batch_size = tf.constant([pred.shape[0]])
-
         # Sample next input from predictions
         samples = tf.random.categorical(pred, num_samples=1, dtype=tf.int32, name='sample_predictions')
 
@@ -121,7 +118,7 @@ class Trainer():
         multiples = tf.reshape(batch_size, [-1], name='multiples_for_tile_op')
         mask = tf.tile(mask, multiples, name='tile_to_create_mask')
         # Reshape into an m x 2 tensor
-        mask = tf.reshape(mask, [pred.shape[0], 2], name='reshape_mask')
+        mask = tf.reshape(mask, [batch_size, 2], name='reshape_mask')
         # Sample to create mask
         mask = tf.random.categorical(mask, num_samples=1, name='sample_from_mask')
         # Recast into a boolean tensor
@@ -133,7 +130,7 @@ class Trainer():
         return dec_input
 
     @tf.function
-    def train_step(self, inp, targ, teacher_force_prob, enc_hidden, out_len):
+    def train_step(self, inp, targ, teacher_force_prob, enc_hidden, out_len, batch_size):
         """Performs forward- and back-propagation on a single training batch."""
         loss = 0
 
@@ -156,7 +153,7 @@ class Trainer():
                 self.update_accuracy(targ[:, t], predictions, self.train_acc)
 
                 # Teacher forcing/scheduled sampling
-                dec_input = self.sample(predictions, targ[:, t], teacher_force_prob)
+                dec_input = self.sample(predictions, targ[:, t], teacher_force_prob, batch_size)
 
         self.train_loss.update_state(loss)
 
@@ -172,7 +169,7 @@ class Trainer():
         return self.train_loss.result(), self.train_acc.result()
 
     @tf.function
-    def val_step(self, inp, targ, teacher_force_prob, enc_hidden, out_len):
+    def val_step(self, inp, targ, teacher_force_prob, enc_hidden, out_len, batch_size):
         """Perform forward-propagation on a single validation batch."""
         loss = 0
 
@@ -191,7 +188,7 @@ class Trainer():
             self.update_accuracy(targ[:, t], predictions, self.val_acc)
 
             # Use teacher forcing or sampling as appropriate...
-            dec_input = self.sample(predictions, targ[: t], teacher_force_prob)
+            dec_input = self.sample(predictions, targ[: t], teacher_force_prob, batch_size)
 
         # Calculate val_loss
         self.val_loss.update_state(loss)
