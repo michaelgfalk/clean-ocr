@@ -120,7 +120,7 @@ class Trainer():
         multiples = tf.reshape(batch_size, [-1], name='multiples_for_tile_op')
         mask = tf.tile(mask, multiples, name='tile_to_create_mask')
         # Reshape into an m x 2 tensor
-        mask = tf.reshape(mask, [batch_size, 2], name='reshape_mask')
+        mask = tf.reshape(mask, [pred.shape[0], 2], name='reshape_mask')
         # Sample to create mask
         mask = tf.random.categorical(mask, num_samples=1, name='sample_from_mask')
         # Recast into a boolean tensor
