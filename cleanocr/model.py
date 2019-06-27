@@ -155,7 +155,7 @@ class Decoder(Model):
         # state: previous hidden state of decoder [m x dec_units]
         # C: attention matrix
 
-        tf.assert_rank(x, 3)
+        tf.assert_rank(x, 2)
         tf.assert_rank(state, 2)
         tf.assert_rank(C, 2)
 
