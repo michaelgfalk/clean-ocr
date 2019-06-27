@@ -69,7 +69,7 @@ class FixedMemoryAttention(Layer):
         L_lhs = tf.tensordot((1 - K_seq) / K, (1 - t_seq) / t, axes=0)
         L_rhs = tf.tensordot(K_seq / K, t_seq / t, axes=0)
 
-        L = L_lhs + L_rhs
+        L = tf.math.add(L_lhs, L_rhs)
 
         # Apply w_alpha to all timesteps
         # This gives each timestep a score against each of the K attention vectors.
