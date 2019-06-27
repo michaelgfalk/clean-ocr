@@ -155,11 +155,13 @@ class Decoder(Model):
         # state: previous hidden state of decoder [m x dec_units]
         # C: attention matrix
 
+        tf.assert_rank(x, 3)
+        tf.assert_rank(state, 2)
+        tf.assert_rank(C, 2)
+
         # Compute embeddings for x
         # x shape after embedding == (m, 1, embedding_dim)
         x = self.embedding(x)
-        if tf.rank(x) < 3:
-            tf.expand_dims(x, 1)
 
         # Score attention vectors
         # beta shape == (m, k)

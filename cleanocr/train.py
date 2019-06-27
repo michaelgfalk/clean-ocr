@@ -153,7 +153,7 @@ class Trainer():
                 self.update_accuracy(targ[:, t], predictions, self.train_acc)
 
                 # Teacher forcing/scheduled sampling
-                dec_input = targ[:, t]
+                dec_input = tf.expand_dims(targ[:, t], 1)
                 # dec_input = self.sample(predictions, targ[:, t], teacher_force_prob, batch_size)
 
         self.train_loss.update_state(loss)
