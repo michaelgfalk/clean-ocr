@@ -46,8 +46,6 @@ def train(**kwargs):
     You can supply the hyperparemters in a json file, or use
     the config.json included in this package."""
 
-    print(kwargs)
-
     # Get options, store in HParams
     if kwargs['json'] == 'use_included':
         with path('cleanocr', 'config.json') as json_path:
