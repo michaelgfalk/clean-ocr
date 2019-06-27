@@ -245,7 +245,7 @@ class Trainer():
                 enc_hidden = self.encoder.initialize_hidden_state(batch_size)
 
                 # Forward- and backpropagation
-                loss, acc = self.train_step(inp, targ, _force_prob, enc_hidden, out_len)
+                loss, acc = self.train_step(inp, targ, _force_prob, enc_hidden, out_len, batch_size)
 
                 # Count the batch and print message
                 train_batches += 1
@@ -269,7 +269,7 @@ class Trainer():
 
                 # Forward propagation
                 val_loss_, val_acc_ = self.val_step(inp, targ, _force_prob,
-                                                    enc_hidden, out_len)
+                                                    enc_hidden, out_len, batch_size)
 
                 val_batches += 1
 
