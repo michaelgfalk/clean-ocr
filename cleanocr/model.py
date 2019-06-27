@@ -158,6 +158,8 @@ class Decoder(Model):
         # Compute embeddings for x
         # x shape after embedding == (m, 1, embedding_dim)
         x = self.embedding(x)
+        if tf.rank(x) < 3:
+            tf.expand_dims(x, 1)
 
         # Score attention vectors
         # beta shape == (m, k)
