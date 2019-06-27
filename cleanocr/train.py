@@ -109,6 +109,7 @@ class Trainer():
             real = tf.expand_dims(real, 1)
 
         # Batch size
+        print(f'Shape of pred: {pred.shape[0]}')
         batch_size = tf.constant([pred.shape[0]])
 
         # Sample next input from predictions
